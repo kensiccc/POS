@@ -276,15 +276,8 @@ export default function POSPage({ darkMode, onToggleDark, token, currentUser, on
         threshold: 10,
         imageUrl: imageUrl || '/images/matcha-dream.jpg',
       })
-      setMenu((prev) => [...prev, {
-        id: newProduct.id,
-        name: newProduct.name,
-        cat: category,
-        price: parseFloat(newProduct.price),
-        stock: newProduct.stock,
-        threshold: newProduct.threshold,
-        img: newProduct.image_url || newProduct.img,
-      }])
+      await loadProducts()
+      alert(`${newProduct.name} successfully added to the catalog!`)
       showToast(`${newProduct.name} created!`)
     } catch (err) {
       showToast(err.message || 'Unable to create product', true)
