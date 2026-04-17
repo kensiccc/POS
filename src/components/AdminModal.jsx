@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function AdminModal({ open, onClose, menu, tab, onSetTab, onAddProduct, onEditProduct, onDeleteProduct, onUpdateStock, onResetMenu }) {
   const [newProdName, setNewProdName] = useState('')
@@ -7,6 +7,32 @@ export default function AdminModal({ open, onClose, menu, tab, onSetTab, onAddPr
   const [newProdStock, setNewProdStock] = useState('')
   const [newProdImg, setNewProdImg] = useState('')
   const [dragActive, setDragActive] = useState(false)
+  const [localStock, setLocalStock] = useState({})
+
+  useEffect(() => {
+    if (open && tab === 'stock') {
+      const stocks = {}
+      menu.forEach(item => {
+        stocks[item.id] = String(item.stock)
+      })
+      setLocalStock(stocks)
+    }
+  }, [open, tab, menu])
+
+  const handleStockChange = (id, val) => {
+    setLocalStock(prev => ({ ...prev, [id]: val }))
+  }
+
+  const handleStockBlur = (id, val) => {
+    onUpdateStock(id, val)
+  }
+
+  const handleStockKeyDown = (e, id, val) => {
+    if (e.key === 'Enter') {
+      onUpdateStock(id, val)
+      e.target.blur()
+    }
+  }
 
   const handleAddProduct = () => {
     if (!newProdName || !newProdPrice || newProdStock === '') {
@@ -215,8 +241,10 @@ export default function AdminModal({ open, onClose, menu, tab, onSetTab, onAddPr
                     <div style={{fontSize: '.85rem', fontWeight: 700, color: statusColor}}>{status}</div>
                     <input 
                       type="number"
-                      value={item.stock}
-                      onChange={(e) => onUpdateStock(item.id, e.target.value)}
+                      value={localStock[item.id] || ''}
+                      onChange={(e) => handleStockChange(item.id, e.target.value)}
+                      onBlur={(e) => handleStockBlur(item.id, e.target.value)}
+                      onKeyDown={(e) => handleStockKeyDown(e, item.id, e.target.value)}
                       style={{width: '70px', padding: '4px', marginTop: '4px', border: '1px solid var(--border)', borderRadius: '4px'}}
                     />
                   </div>
