@@ -103,10 +103,11 @@ export default function POSPage({ darkMode, onToggleDark, token, currentUser, on
         date: orderItem.order_date || orderItem.date || '',
       }))
       setOrderHistory(mapped)
+      // setError(null) // Keep errors quiet as requested
       syncOrderNumber(orders)
     } catch (err) {
       console.error('Load orders failed', err)
-      setError('Unable to load order history from backend.')
+      // setError('Unable to load order history from backend.') // Suppressed as requested
     }
   }
 
@@ -303,9 +304,9 @@ export default function POSPage({ darkMode, onToggleDark, token, currentUser, on
       })
       setMenu((prev) => prev.map((m) => (m.id === id ? {
         ...m,
-        name: updated.name,
-        price: parseFloat(updated.price),
-        stock: updated.stock,
+        name: updated?.name || m.name,
+        price: updated?.price ? parseFloat(updated.price) : m.price,
+        stock: updated?.stock ?? m.stock,
       } : m)))
       showToast('Product updated!')
     } catch (err) {
@@ -330,8 +331,8 @@ export default function POSPage({ darkMode, onToggleDark, token, currentUser, on
       })
       setMenu((prev) => prev.map((m) => (m.id === id ? {
         ...m,
-        stock: updated.stock,
-        threshold: updated.threshold,
+        stock: updated?.stock ?? m.stock,
+        threshold: updated?.threshold ?? m.threshold,
       } : m)))
     } catch (err) {
       showToast(err.message || 'Unable to update stock', true)
@@ -366,7 +367,7 @@ export default function POSPage({ darkMode, onToggleDark, token, currentUser, on
       />
 
       {loading && <div className="page-banner">Loading live data…</div>}
-      {error && <div className="page-banner error">{error}</div>}
+      {/* {error && <div className="page-banner error">{error}</div>}  -- Removed as requested */}
 
       <div className="layout">
         <MenuPanel
