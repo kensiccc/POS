@@ -16,8 +16,11 @@ function getRangeDates(range) {
   const today = now.toISOString().slice(0, 10)
   if (range === 'week') {
     const start = new Date(now)
-    start.setDate(now.getDate() - now.getDay() + 1)
-    return { from: start.toISOString().slice(0, 10), to: today }
+    // Adjust to Monday of the current week. If Sunday (0), go back 6 days.
+    const day = now.getDay()
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1)
+    start.setDate(diff)
+    return { from: start.toISOString().split('T')[0], to: today }
   }
   if (range === 'month') {
     return { from: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`, to: today }
