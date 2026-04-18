@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export default function LoginPage({ onLogin, errorMessage }) {
@@ -7,17 +7,41 @@ export default function LoginPage({ onLogin, errorMessage }) {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [wakingUp, setWakingUp] = useState(false)
+  const [localError, setLocalError] = useState('')
+
+  // Show "server waking up" message after 3 seconds of waiting
+  useEffect(() => {
+    let timer
+    if (isSubmitting) {
+      timer = setTimeout(() => setWakingUp(true), 3000)
+    } else {
+      setWakingUp(false)
+    }
+    return () => clearTimeout(timer)
+  }, [isSubmitting])
 
   const handleSubmit = async (event) => {
     event.preventDefault()
     setIsSubmitting(true)
+    setLocalError('')
+
+    // Create a 90-second timeout so the button never hangs forever
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Server is taking too long. Please try again.')), 90000)
+    )
+
     try {
-      await onLogin(email, password)
+      await Promise.race([onLogin(email, password), timeout])
       navigate('/', { replace: true })
+    } catch (err) {
+      setLocalError(err.message || 'Login failed. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
   }
+
+  const displayError = localError || errorMessage
 
   return (
     <div className="login-view">
@@ -35,6 +59,7 @@ export default function LoginPage({ onLogin, errorMessage }) {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="admin@houseblend.local"
             required
+            disabled={isSubmitting}
           />
 
           <label>Password</label>
@@ -45,6 +70,7 @@ export default function LoginPage({ onLogin, errorMessage }) {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
+              disabled={isSubmitting}
             />
             <button
               type="button"
@@ -56,16 +82,30 @@ export default function LoginPage({ onLogin, errorMessage }) {
             </button>
           </div>
 
-          {errorMessage && <div className="form-error">{errorMessage}</div>}
+          {displayError && <div className="form-error">{displayError}</div>}
+
+          {wakingUp && !displayError && (
+            <div className="form-info" style={{
+              background: 'rgba(59,130,246,0.12)',
+              border: '1px solid rgba(59,130,246,0.3)',
+              borderRadius: '8px',
+              padding: '10px 14px',
+              fontSize: '0.85rem',
+              color: '#93c5fd',
+              marginTop: '4px'
+            }}>
+              ☕ Server is waking up from sleep… This may take up to 60 seconds on first login. Please wait.
+            </div>
+          )}
 
           <button type="submit" className="login-btn" disabled={isSubmitting}>
-            {isSubmitting ? 'Signing in…' : 'Sign in'}
+            {isSubmitting ? (wakingUp ? 'Waking up server…' : 'Signing in…') : 'Sign in'}
           </button>
 
           <div className="login-help">
             <p>Use demo credentials:</p>
-            <p><strong>admin@houseblend.local</strong> / Admin123!</p>
-            <p><strong>cashier@houseblend.local</strong> / Cashier123!</p>
+            <p><a href="#" onClick={(e) => { e.preventDefault(); setEmail('admin@houseblend.local'); setPassword('Admin123!') }}>admin@houseblend.local</a> / Admin123!</p>
+            <p><a href="#" onClick={(e) => { e.preventDefault(); setEmail('cashier@houseblend.local'); setPassword('Cashier123!') }}>cashier@houseblend.local</a> / Cashier123!</p>
           </div>
         </form>
       </div>
