@@ -24,13 +24,11 @@ const ROLES = [
 
 export default function LoginPage({ onLogin, errorMessage }) {
   const navigate = useNavigate()
-  const [selectedRole, setSelectedRole] = useState(null)
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [wakingUp, setWakingUp] = useState(false)
   const [localError, setLocalError] = useState('')
 
+  // Show "server waking up" message after 3 seconds of waiting
   useEffect(() => {
     let timer
     if (isSubmitting) {
@@ -41,15 +39,7 @@ export default function LoginPage({ onLogin, errorMessage }) {
     return () => clearTimeout(timer)
   }, [isSubmitting])
 
-  const handleRoleSelect = (role) => {
-    setSelectedRole(role)
-    setPassword('')
-    setLocalError('')
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!selectedRole) return
+  const handleRoleSelect = async (role) => {
     setIsSubmitting(true)
     setLocalError('')
 
@@ -58,10 +48,10 @@ export default function LoginPage({ onLogin, errorMessage }) {
     )
 
     try {
-      await Promise.race([onLogin(selectedRole.email, password), timeout])
+      await Promise.race([onLogin(role.email, role.password), timeout])
       navigate('/', { replace: true })
     } catch (err) {
-      setLocalError(err.message || 'Incorrect password. Please try again.')
+      setLocalError(role.label + ' login failed. The server might be down.')
     } finally {
       setIsSubmitting(false)
     }
@@ -75,8 +65,8 @@ export default function LoginPage({ onLogin, errorMessage }) {
         {/* Brand */}
         <div className="lp-brand">
           <div className="lp-logo">☕</div>
-          <h1 className="lp-title">House Blend POS</h1>
-          <p className="lp-sub">Select your role to continue</p>
+          <h1 className="lp-title">Sample POS</h1>
+          <p className="lp-sub">Select your position to enter</p>
         </div>
 
         {/* Role Cards */}
@@ -84,68 +74,32 @@ export default function LoginPage({ onLogin, errorMessage }) {
           {ROLES.map((role) => (
             <button
               key={role.key}
-              className={`lp-role-card ${selectedRole?.key === role.key ? 'selected' : ''}`}
+              className="lp-role-card"
               onClick={() => handleRoleSelect(role)}
+              disabled={isSubmitting}
               style={{ '--role-color': role.color }}
               type="button"
             >
               <span className="lp-role-icon">{role.icon}</span>
               <span className="lp-role-label">{role.label}</span>
               <span className="lp-role-desc">{role.desc}</span>
-              {selectedRole?.key === role.key && <span className="lp-role-check">✓</span>}
             </button>
           ))}
         </div>
 
-        {/* Password form — only shows after picking a role */}
-        <div className={`lp-form-wrap ${selectedRole ? 'visible' : ''}`}>
-          <form className="lp-form" onSubmit={handleSubmit}>
-            <div className="lp-pwd-label">
-              <span>
-                Password for <strong>{selectedRole?.label}</strong>
-              </span>
+        <div className="lp-status-area">
+          {isSubmitting && (
+            <div className="lp-loading">
+              {wakingUp ? '☕ Server is waking up... Please wait.' : 'Logging in...'}
             </div>
+          )}
+          
+          {displayError && <div className="lp-error">{displayError}</div>}
+        </div>
 
-            <div className="lp-pwd-row">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-                disabled={isSubmitting}
-                autoFocus
-                className="lp-pwd-input"
-              />
-              <button
-                type="button"
-                className="lp-pwd-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-              >
-                {showPassword ? '🙈' : '👁️'}
-              </button>
-            </div>
-
-            {displayError && <div className="lp-error">{displayError}</div>}
-
-            {wakingUp && !displayError && (
-              <div className="lp-wakeup">
-                ☕ Server is waking up… please wait up to 60 sec.
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="lp-submit"
-              disabled={isSubmitting || !password}
-              style={{ '--role-color': selectedRole?.color || '#2563eb' }}
-            >
-              {isSubmitting
-                ? wakingUp ? 'Waking up server…' : 'Signing in…'
-                : `Sign in as ${selectedRole?.label}`}
-            </button>
-          </form>
+        {/* Footer */}
+        <div className="lp-footer">
+          Developer: Kensic
         </div>
       </div>
     </div>
