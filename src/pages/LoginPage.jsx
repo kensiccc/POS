@@ -66,7 +66,8 @@ export default function LoginPage({ onLogin, errorMessage }) {
         <div className="lp-brand">
           <div className="lp-logo">☕</div>
           <h1 className="lp-title">Sample POS</h1>
-          <p className="lp-sub">Select your position to enter</p>
+          <p className="lp-sub">by Dev Kensic</p>
+          <p className="lp-sub" style={{ marginTop: '8px', opacity: 0.8 }}>Select your position to enter</p>
         </div>
 
         {/* Role Cards */}
