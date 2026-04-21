@@ -155,7 +155,7 @@ export default function ReceiptModal({ open, onClose, order, subtotal, discount,
 
           <div className="receipt-paper">
             <div className="receipt-brand">
-              <img src="/house-blend-logo.png" alt="Logo" style={{ width: '64px', height: '64px', marginBottom: '8px' }} />
+              <img src="/logo-icon.png" alt="Logo" style={{ width: '64px', height: '64px', marginBottom: '8px' }} />
               <div className="brand-name">Sample POS</div>
               <div className="brand-tag">by Dev Kensic</div>
               <div className="date-time">{new Date().toLocaleString('en-US')}</div>
