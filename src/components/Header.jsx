@@ -2,7 +2,7 @@ export default function Header({ darkMode, onToggleDark, onOpenAdmin, onOpenDash
   return (
     <header className="header">
       <div className="logo">
-        <img src="/house-blend-logo.png" alt="Sample POS" className="logo-img" />
+        <img src="/logo-icon.png" alt="Sample POS" className="logo-img" />
         <div>
           <h1>☕ Sample POS</h1>
           <p>by Dev Kensic</p>
